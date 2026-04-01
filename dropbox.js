@@ -1,13 +1,13 @@
 // ===== dropbox.js: Dropbox API連携 =====
 // ★ YOUR_APP_KEY を Dropbox Developers で取得したApp Keyに書き換えてください
-const DROPBOX_APP_KEY = 'YOUR_APP_KEY';
+const DROPBOX_APP_KEY = 'g0t3dtvs24vxpxd';
 
 // ★ リダイレクトURIを環境に合わせて設定してください
 //　 ローカルテスト時：'http://localhost:8080/'
 // 　 Cloudflare Pages公開後：'https://あなたのサイト名.pages.dev/'
 // 　 ※末尾のスラッシュを必ず付けること
 // 　 ※Dropbox Developers の Redirect URIs に同じURLを登録すること
-const DROPBOX_REDIRECT_URI = location.origin + '/';
+const DROPBOX_REDIRECT_URI = 'https://hanmok-app.osakitask.workers.dev/';
 
 let dropboxToken = null;
 
