@@ -612,3 +612,5 @@ if ('serviceWorker' in navigator && 'caches' in window) {
     keys.filter(k => k !== 'hanmok-v2').forEach(k => caches.delete(k));
   });
 }
+
+//
