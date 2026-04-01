@@ -1,5 +1,5 @@
 // ===== sw.js: Service Worker =====
-const CACHE_NAME = 'hanmok-v1';
+const CACHE_NAME = 'hanmok-v2';
 const ASSETS = [
   './',
   './index.html',
