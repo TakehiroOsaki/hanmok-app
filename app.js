@@ -605,3 +605,10 @@ async function doExport() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
+
+// 古いService Workerキャッシュを強制クリア
+if ('serviceWorker' in navigator && 'caches' in window) {
+  caches.keys().then(keys => {
+    keys.filter(k => k !== 'hanmok-v2').forEach(k => caches.delete(k));
+  });
+}
