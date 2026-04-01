@@ -609,8 +609,6 @@ if ('serviceWorker' in navigator) {
 // 古いService Workerキャッシュを強制クリア
 if ('serviceWorker' in navigator && 'caches' in window) {
   caches.keys().then(keys => {
-    keys.filter(k => k !== 'hanmok-v2').forEach(k => caches.delete(k));
+    keys.filter(k => k !== 'hanmok-v3').forEach(k => caches.delete(k));
   });
 }
-
-//
