@@ -1,5 +1,5 @@
 // ===== dropbox.js =====
-const DROPBOX_APP_KEY = 'YOUR_APP_KEY';
+const DROPBOX_APP_KEY = 'g0t3dtvs24vxpxd';
 const DROPBOX_REDIRECT_URI = location.origin + '/';
 
 let dropboxToken = null;
