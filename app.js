@@ -405,8 +405,9 @@ async function renderHanmokTable() {
       const td = document.createElement('td');
       td.className = 'cell-total';
       td.dataset.col = ts; td.dataset.rowtype = idx;
-      const mVal = isGk ? Math.floor(colMok[ts] * tanka / 10)*10 : colMok[ts];
-      const jVal = isGk ? Math.floor(colJsk[ts] * tanka / 10)*10 : colJsk[ts];
+      // colMok/colJskにはすでにisGkに応じた値（金額 or 数量）が入っているので再計算不要
+      const mVal = colMok[ts];
+      const jVal = colJsk[ts];
       const val  = idx===0 ? mVal : idx===1 ? jVal : jVal-mVal;
       td.textContent = val.toLocaleString();
       if (idx===2 && val<0) td.classList.add('sa-minus');
@@ -685,6 +686,6 @@ async function doExport() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
   caches.keys().then(keys => {
-    keys.filter(k => k !== 'hanmok-v4').forEach(k => caches.delete(k));
+    keys.filter(k => k !== 'hanmok-v5').forEach(k => caches.delete(k));
   });
 }

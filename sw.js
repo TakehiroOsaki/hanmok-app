@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hanmok-v4';
+const CACHE_NAME = 'hanmok-v5';
 const ASSETS = ['./index.html','./app.js','./db.js','./dropbox.js','./csv.js','./manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/2.0.0/encoding.min.js'];
 
