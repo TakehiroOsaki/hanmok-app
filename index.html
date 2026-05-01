@@ -144,6 +144,10 @@
   .cell-input::-webkit-outer-spin-button,.cell-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
   .cell-input[type=number]{-moz-appearance:textfield;}
 
+  /* メニューへ戻るボタン */
+  .btn-menu-back{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0;}
+  .btn-menu-back:active{opacity:0.8;transform:scale(0.97);}
+
   /* グループ区切り線 */
   .hanmok-table tr.tr-sa-last td{border-bottom:2px solid var(--primary);}
 
@@ -247,6 +251,7 @@
   <div class="screen" id="screenHanmok">
     <div class="header"><button class="header-back" onclick="showScreen('screenMenu')">‹</button><div class="header-title">販売目標確認</div></div>
     <div class="ctrl-bar">
+      <button class="btn-menu-back" onclick="showScreen('screenMenu')">🏠 メニュー</button>
       <select class="form-input" id="hanmokNendoSel" onchange="renderHanmokTable()" style="max-width:120px;flex:none;"></select>
       <select class="form-input" id="hanmokShohinSel" onchange="renderHanmokTable()" style="flex:1;min-width:150px;"></select>
       <div class="radio-group">
@@ -261,6 +266,7 @@
   <div class="screen" id="screenShukei">
     <div class="header"><button class="header-back" onclick="showScreen('screenMenu')">‹</button><div class="header-title">商品別集計</div></div>
     <div class="ctrl-bar">
+      <button class="btn-menu-back" onclick="showScreen('screenMenu')">🏠 メニュー</button>
       <select class="form-input" id="shukeiNendoSel" onchange="renderShukeiTable()" style="max-width:120px;flex:none;"></select>
       <div class="radio-group">
         <input type="radio" name="hyojiS" id="hyojiSSu" value="0" checked onchange="renderShukeiTable()"><label for="hyojiSSu">数量</label>
@@ -274,6 +280,7 @@
   <div class="screen" id="screenTokuiShukei">
     <div class="header"><button class="header-back" onclick="showScreen('screenMenu')">‹</button><div class="header-title">得意先別集計</div></div>
     <div class="ctrl-bar">
+      <button class="btn-menu-back" onclick="showScreen('screenMenu')">🏠 メニュー</button>
       <select class="form-input" id="tokuiShukeiNendoSel" onchange="renderTokuiShukeiTable()" style="max-width:120px;flex:none;"></select>
       <div class="radio-group">
         <input type="radio" name="hyojiT" id="hyojiTSu" value="0" checked onchange="renderTokuiShukeiTable()"><label for="hyojiTSu">数量</label>
