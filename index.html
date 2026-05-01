@@ -46,7 +46,8 @@
   .menu-item:nth-child(2) .menu-icon{background:#2e7d52;}
   .menu-item:nth-child(3) .menu-icon{background:#1565c0;}
   .menu-item:nth-child(4) .menu-icon{background:#6a1b9a;}
-  .menu-item:nth-child(5) .menu-icon{background:var(--accent);}
+  .menu-item:nth-child(5) .menu-icon{background:#00695c;}
+  .menu-item:nth-child(6) .menu-icon{background:var(--accent);}
   .menu-item-text{flex:1;}
   .menu-item-label{font-size:16px;font-weight:700;}
   .menu-item-desc{font-size:12px;color:var(--text-sub);margin-top:2px;}
@@ -191,6 +192,11 @@
         <div class="menu-item-text"><div class="menu-item-label">商品別集計</div><div class="menu-item-desc">商品毎の目標・実績・差異集計</div></div>
         <div class="menu-arrow">›</div>
       </div>
+      <div class="menu-item disabled" id="menuTokuiShukei" onclick="showScreen('screenTokuiShukei')">
+        <div class="menu-icon">🏪</div>
+        <div class="menu-item-text"><div class="menu-item-label">得意先別集計</div><div class="menu-item-desc">得意先毎の目標・実績・差異集計</div></div>
+        <div class="menu-arrow">›</div>
+      </div>
       <div class="menu-item disabled" id="menuExport" onclick="showScreen('screenExport')">
         <div class="menu-icon">📤</div>
         <div class="menu-item-text"><div class="menu-item-label">データエクスポート</div><div class="menu-item-desc">Dropboxへデータを出力</div></div>
@@ -262,6 +268,19 @@
       </div>
     </div>
     <div class="table-container" id="shukeiTableContainer"><div style="padding:40px;text-align:center;color:var(--text-sub);font-size:14px;">年度を選択してください</div></div>
+  </div>
+
+  <!-- 得意先別集計 -->
+  <div class="screen" id="screenTokuiShukei">
+    <div class="header"><button class="header-back" onclick="showScreen('screenMenu')">‹</button><div class="header-title">得意先別集計</div></div>
+    <div class="ctrl-bar">
+      <select class="form-input" id="tokuiShukeiNendoSel" onchange="renderTokuiShukeiTable()" style="max-width:120px;flex:none;"></select>
+      <div class="radio-group">
+        <input type="radio" name="hyojiT" id="hyojiTSu" value="0" checked onchange="renderTokuiShukeiTable()"><label for="hyojiTSu">数量</label>
+        <input type="radio" name="hyojiT" id="hyojiTGk" value="1" onchange="renderTokuiShukeiTable()"><label for="hyojiTGk">金額</label>
+      </div>
+    </div>
+    <div class="table-container" id="tokuiShukeiTableContainer"><div style="padding:40px;text-align:center;color:var(--text-sub);font-size:14px;">年度を選択してください</div></div>
   </div>
 
   <!-- データエクスポート -->

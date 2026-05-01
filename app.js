@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setCurrentEigyo(e) {
   currentEigyo = e;
   document.getElementById('menuUserLabel').innerHTML = `担当者：<span>${e.eigyo_name}（${e.eigyo_cd}）</span>`;
-  ['menuImport','menuHanmok','menuShukei','menuExport'].forEach(id => {
+  ['menuImport','menuHanmok','menuShukei','menuTokuiShukei','menuExport'].forEach(id => {
     document.getElementById(id).classList.remove('disabled');
   });
   document.getElementById('importFolderName').textContent = `/${e.eigyo_cd}/`;
@@ -31,9 +31,10 @@ function setCurrentEigyo(e) {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  if (id === 'screenEigyo')  initEigyoScreen();
-  if (id === 'screenHanmok') initHanmokScreen();
-  if (id === 'screenShukei') initShukeiScreen();
+  if (id === 'screenEigyo')       initEigyoScreen();
+  if (id === 'screenHanmok')      initHanmokScreen();
+  if (id === 'screenShukei')      initShukeiScreen();
+  if (id === 'screenTokuiShukei') initTokuiShukeiScreen();
   if (id === 'screenImport' || id === 'screenExport') updateDropboxStatus();
 }
 
@@ -647,6 +648,183 @@ async function renderShukeiTable() {
 }
 
 // =============================================
+// 得意先別集計
+// =============================================
+async function initTokuiShukeiScreen() {
+  const nendoSel = document.getElementById('tokuiShukeiNendoSel');
+  nendoSel.innerHTML = '';
+  const nendos = await buildNendoList();
+  const curNendo = getNendo(new Date());
+  if (nendos.length === 0) nendos.push(curNendo);
+  nendos.forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n; opt.textContent = `${n}年度`;
+    if (n === curNendo) opt.selected = true;
+    nendoSel.appendChild(opt);
+  });
+  renderTokuiShukeiTable();
+}
+
+async function renderTokuiShukeiTable() {
+  const nendo = parseInt(document.getElementById('tokuiShukeiNendoSel').value);
+  if (!nendo) return;
+  const isGk = document.querySelector('input[name="hyojiT"]:checked').value === '1';
+
+  const targetNenTsuki = TSUKI_LIST.map(ts => ({
+    ts, nen: String(parseInt(ts) >= 3 ? nendo : nendo+1)
+  }));
+
+  // マスタ・データ取得
+  const tokuisakiList = (await dbGetAll(STORES.TOKUISAKI))
+    .sort((a,b) => a.tokuisaki_cd.localeCompare(b.tokuisaki_cd));
+  const shohinList = await dbGetAll(STORES.SHOHIN);
+
+  // 単価マップ（商品コード→単価）
+  const tankaMap = {};
+  shohinList.forEach(s => { tankaMap[`${s.shohin_kbn}_${s.shohin_cd}`] = s.hanbai_tanka || 0; });
+
+  const allHanmok = (await dbGetAll(STORES.HANMOK)).filter(h =>
+    h.eigyo_cd === currentEigyo.eigyo_cd &&
+    targetNenTsuki.some(nt => nt.nen === h.nen && nt.ts === h.tsuki)
+  );
+  const allHanjsk = (await dbGetAll(STORES.HANJSK)).filter(h =>
+    h.eigyo_cd === currentEigyo.eigyo_cd &&
+    targetNenTsuki.some(nt => nt.nen === h.nen && nt.ts === h.tsuki)
+  );
+
+  // 得意先別集計（全商品合計）
+  const shukeiData = [];
+  for (const t of tokuisakiList) {
+    const moks = {}, jsks = {};
+    targetNenTsuki.forEach(({ ts, nen }) => {
+      const mRecs = allHanmok.filter(h => h.tokuisaki_cd === t.tokuisaki_cd && h.tsuki === ts && h.nen === nen);
+      const jRecs = allHanjsk.filter(h => h.tokuisaki_cd === t.tokuisaki_cd && h.tsuki === ts && h.nen === nen);
+      // 商品ごとに単価を掛けて金額合計
+      const mSu = mRecs.reduce((s,h) => s + h.hanbai_mokuhyo_su, 0);
+      const jSu = jRecs.reduce((s,h) => s + h.hanbai_jisseki_su, 0);
+      const mGk = mRecs.reduce((s,h) => s + Math.floor(h.hanbai_mokuhyo_su * (tankaMap[`${h.shohin_kbn}_${h.shohin_cd}`]||0) / 10)*10, 0);
+      const jGk = jRecs.reduce((s,h) => s + Math.floor(h.hanbai_jisseki_su * (tankaMap[`${h.shohin_kbn}_${h.shohin_cd}`]||0) / 10)*10, 0);
+      moks[ts] = { su: mSu, gk: mGk };
+      jsks[ts] = { su: jSu, gk: jGk };
+    });
+    const hasMok = Object.values(moks).some(m => m.su > 0);
+    const hasJsk = Object.values(jsks).some(j => j.su > 0);
+    if (hasMok || hasJsk) shukeiData.push({ tokuisaki: t, moks, jsks });
+  }
+
+  if (shukeiData.length === 0) {
+    document.getElementById('tokuiShukeiTableContainer').innerHTML =
+      '<div style="padding:40px;text-align:center;color:var(--text-sub);font-size:14px;">データがありません</div>';
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'hanmok-table';
+
+  // ヘッダー
+  const thead = document.createElement('thead');
+  const trH = document.createElement('tr');
+  mkTh(trH, '得意先名', 'col-fix');
+  mkTh(trH, '', 'col-rowtype');
+  targetNenTsuki.forEach(({ ts, nen }) => {
+    const th = document.createElement('th');
+    th.innerHTML = `<span class="month-year">${nen}年</span>${TSUKI_LABEL[ts]}`;
+    trH.appendChild(th);
+  });
+  mkTh(trH, '合計');
+  thead.appendChild(trH);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  const totalMok = {}, totalJsk = {};
+  targetNenTsuki.forEach(({ ts }) => { totalMok[ts]=0; totalJsk[ts]=0; });
+  let gtMok=0, gtJsk=0;
+
+  for (const { tokuisaki, moks, jsks } of shukeiData) {
+    let rowMok=0, rowJsk=0;
+    ['目標','実績','差異'].forEach((label, idx) => {
+      const cls = ['tr-mok','tr-jsk','tr-sa'][idx];
+      const tr = document.createElement('tr');
+      tr.className = cls + (idx===2 ? ' tr-sa-last' : '');
+
+      if (idx === 0) {
+        const td = document.createElement('td');
+        td.className = 'col-fix'; td.rowSpan = 3;
+        td.textContent = tokuisaki.tokuisaki_name;
+        td.style.verticalAlign = 'middle'; td.style.fontSize = '12px';
+        tr.appendChild(td);
+      }
+      const tdType = document.createElement('td');
+      tdType.className = `col-rowtype ${['mok','jsk','sa'][idx]}`; tdType.textContent = label;
+      tr.appendChild(tdType);
+
+      targetNenTsuki.forEach(({ ts }) => {
+        const m = moks[ts], j = jsks[ts];
+        const mVal = isGk ? m.gk : m.su;
+        const jVal = isGk ? j.gk : j.su;
+        const val  = idx===0 ? mVal : idx===1 ? jVal : jVal-mVal;
+        const td = document.createElement('td');
+        td.className = 'cell-data ' + cls;
+        const sp = document.createElement('span');
+        sp.className = 'cell-inner' + (idx===2 && val<0 ? ' sa-minus':'');
+        sp.textContent = val.toLocaleString();
+        td.appendChild(sp); tr.appendChild(td);
+        if (idx===0) { rowMok+=mVal; totalMok[ts]+=mVal; }
+        if (idx===1) { rowJsk+=jVal; totalJsk[ts]+=jVal; }
+      });
+
+      const tdT = document.createElement('td');
+      tdT.className = 'cell-total ' + cls;
+      if (idx===0) tdT.textContent = rowMok.toLocaleString();
+      else if (idx===1) tdT.textContent = rowJsk.toLocaleString();
+      else {
+        const sa = rowJsk-rowMok;
+        tdT.textContent = sa.toLocaleString();
+        if (sa<0) tdT.classList.add('sa-minus');
+      }
+      tr.appendChild(tdT);
+      tbody.appendChild(tr);
+    });
+    gtMok += rowMok; gtJsk += rowJsk;
+  }
+
+  // 総合計行
+  ['目標','実績','差異'].forEach((label, idx) => {
+    const cls = ['tr-mok','tr-jsk','tr-sa'][idx];
+    const tr = document.createElement('tr');
+    tr.className = 'row-total ' + cls;
+    if (idx===0) {
+      const td = document.createElement('td');
+      td.className = 'col-fix'; td.textContent='合計'; td.rowSpan=3;
+      td.style.verticalAlign='middle'; td.style.fontWeight='800';
+      tr.appendChild(td);
+    }
+    const tdType = document.createElement('td');
+    tdType.className = `col-rowtype ${['mok','jsk','sa'][idx]}`; tdType.textContent=label;
+    tr.appendChild(tdType);
+    targetNenTsuki.forEach(({ ts }) => {
+      const mVal = totalMok[ts], jVal = totalJsk[ts];
+      const val  = idx===0 ? mVal : idx===1 ? jVal : jVal-mVal;
+      const td = document.createElement('td');
+      td.className = 'cell-total';
+      td.textContent = val.toLocaleString();
+      if (idx===2 && val<0) td.classList.add('sa-minus');
+      tr.appendChild(td);
+    });
+    const gv = idx===0?gtMok:idx===1?gtJsk:gtJsk-gtMok;
+    const tdG = document.createElement('td');
+    tdG.className='cell-total'; tdG.textContent=gv.toLocaleString();
+    if (idx===2&&gv<0) tdG.classList.add('sa-minus');
+    tr.appendChild(tdG);
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  const container = document.getElementById('tokuiShukeiTableContainer');
+  container.innerHTML = ''; container.appendChild(table);
+}
+
+// =============================================
 // データエクスポート
 // =============================================
 async function execExport() {
@@ -686,6 +864,6 @@ async function doExport() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
   caches.keys().then(keys => {
-    keys.filter(k => k !== 'hanmok-v5').forEach(k => caches.delete(k));
+    keys.filter(k => k !== 'hanmok-v6').forEach(k => caches.delete(k));
   });
 }
