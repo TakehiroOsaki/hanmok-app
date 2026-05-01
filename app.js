@@ -50,6 +50,8 @@ function updateDropboxStatus() {
   });
   const ac = document.getElementById('dropboxAuthCard');
   if (ac) ac.style.display = ok ? 'none' : 'block';
+  const acE = document.getElementById('dropboxAuthCardExport');
+  if (acE) acE.style.display = ok ? 'none' : 'block';
 }
 
 // ---- トースト ----
@@ -864,6 +866,6 @@ async function doExport() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
   caches.keys().then(keys => {
-    keys.filter(k => k !== 'hanmok-v6').forEach(k => caches.delete(k));
+    keys.filter(k => k !== 'hanmok-v7').forEach(k => caches.delete(k));
   });
 }

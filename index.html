@@ -299,6 +299,11 @@
         <div id="exportResultArea" style="display:none;"><div class="card-title">出力結果</div><ul class="import-result" id="exportResultList"></ul></div>
         <div class="btn-row"><button class="btn btn-secondary" onclick="showScreen('screenMenu')">戻る</button><button class="btn btn-accent" onclick="execExport()">OK</button></div>
       </div>
+      <div class="card" id="dropboxAuthCardExport">
+        <div class="card-title">Dropbox認証</div>
+        <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">初回はDropboxとの連携が必要です。</p>
+        <button class="btn btn-primary" onclick="dropboxAuth()">Dropboxと連携する</button>
+      </div>
     </div>
   </div>
 
