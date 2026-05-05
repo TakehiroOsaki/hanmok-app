@@ -160,6 +160,13 @@ async function doImport() {
       await dbClear(f.store);
       await dbBulkPut(f.store, recs);
       addResult(resultList, f.label, `${recs.length}件`, 'ok');
+      // デバッグ：先頭1件の内容を表示
+      if (recs.length > 0 && f.name === 'hanmok.csv') {
+        const r = recs[0];
+        addResult(resultList, '📋 先頭データ確認',
+          `eigyo:${r.eigyo_cd} kbn:${r.shohin_kbn} nen:${r.nen}(${typeof r.nen}) tsuki:${r.tsuki}(${typeof r.tsuki}) su:${r.hanbai_mokuhyo_su}`,
+          'ok');
+      }
     } catch(e) {
       addResult(resultList, f.label, `エラー: ${e.message}`, 'err');
     }
@@ -1029,6 +1036,6 @@ async function doExport() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
   caches.keys().then(keys => {
-    keys.filter(k => k !== 'hanmok-v12').forEach(k => caches.delete(k));
+    keys.filter(k => k !== 'hanmok-v13').forEach(k => caches.delete(k));
   });
 }
