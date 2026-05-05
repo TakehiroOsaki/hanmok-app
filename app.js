@@ -228,11 +228,11 @@ async function renderHanmokTable() {
   // データ取得
   const allHanmok = (await dbGetAll(STORES.HANMOK)).filter(h =>
     h.eigyo_cd === currentEigyo.eigyo_cd && h.shohin_kbn === kbn && h.shohin_cd === cd &&
-    targetNenTsuki.some(nt => nt.nen === h.nen && nt.ts === h.tsuki)
+    targetNenTsuki.some(nt => nt.nen === String(h.nen) && nt.ts === String(h.tsuki).padStart(2,'0'))
   );
   const allHanjsk = (await dbGetAll(STORES.HANJSK)).filter(h =>
     h.eigyo_cd === currentEigyo.eigyo_cd && h.shohin_kbn === kbn && h.shohin_cd === cd &&
-    targetNenTsuki.some(nt => nt.nen === h.nen && nt.ts === h.tsuki)
+    targetNenTsuki.some(nt => nt.nen === String(h.nen) && nt.ts === String(h.tsuki).padStart(2,'0'))
   );
 
   const tokuiSet = [...new Set(allHanmok.map(h => h.tokuisaki_cd))].sort();
@@ -512,13 +512,12 @@ async function renderShukeiTable() {
 
   const allHanmok = (await dbGetAll(STORES.HANMOK)).filter(h =>
     h.eigyo_cd === currentEigyo.eigyo_cd &&
-    targetNenTsuki.some(nt => nt.nen === h.nen && nt.ts === h.tsuki)
+    targetNenTsuki.some(nt => nt.nen === String(h.nen) && nt.ts === String(h.tsuki).padStart(2,'0'))
   );
   const allHanjsk = (await dbGetAll(STORES.HANJSK)).filter(h =>
     h.eigyo_cd === currentEigyo.eigyo_cd &&
-    targetNenTsuki.some(nt => nt.nen === h.nen && nt.ts === h.tsuki)
+    targetNenTsuki.some(nt => nt.nen === String(h.nen) && nt.ts === String(h.tsuki).padStart(2,'0'))
   );
-
   // 商品別集計
   const shukeiData = [];
   for (const s of shohinList) {
@@ -732,12 +731,12 @@ async function renderTokuiShukeiTable() {
   const allHanmok = (await dbGetAll(STORES.HANMOK)).filter(h =>
     h.eigyo_cd === currentEigyo.eigyo_cd &&
     (selKbn === '' || h.shohin_kbn === selKbn) &&
-    targetNenTsuki.some(nt => nt.nen === h.nen && nt.ts === h.tsuki)
+    targetNenTsuki.some(nt => nt.nen === String(h.nen) && nt.ts === String(h.tsuki).padStart(2,'0'))
   );
   const allHanjsk = (await dbGetAll(STORES.HANJSK)).filter(h =>
     h.eigyo_cd === currentEigyo.eigyo_cd &&
     (selKbn === '' || h.shohin_kbn === selKbn) &&
-    targetNenTsuki.some(nt => nt.nen === h.nen && nt.ts === h.tsuki)
+    targetNenTsuki.some(nt => nt.nen === String(h.nen) && nt.ts === String(h.tsuki).padStart(2,'0'))
   );
 
   // 得意先別集計（全商品合計）
@@ -745,8 +744,8 @@ async function renderTokuiShukeiTable() {
   for (const t of tokuisakiList) {
     const moks = {}, jsks = {};
     targetNenTsuki.forEach(({ ts, nen }) => {
-      const mRecs = allHanmok.filter(h => h.tokuisaki_cd === t.tokuisaki_cd && h.tsuki === ts && h.nen === nen);
-      const jRecs = allHanjsk.filter(h => h.tokuisaki_cd === t.tokuisaki_cd && h.tsuki === ts && h.nen === nen);
+      const mRecs = allHanmok.filter(h => h.tokuisaki_cd === t.tokuisaki_cd && String(h.tsuki).padStart(2,'0') === ts && String(h.nen) === nen);
+      const jRecs = allHanjsk.filter(h => h.tokuisaki_cd === t.tokuisaki_cd && String(h.tsuki).padStart(2,'0') === ts && String(h.nen) === nen);
       // 商品ごとに単価を掛けて金額合計
       const mSu = mRecs.reduce((s,h) => s + h.hanbai_mokuhyo_su, 0);
       const jSu = jRecs.reduce((s,h) => s + h.hanbai_jisseki_su, 0);
@@ -1030,6 +1029,6 @@ async function doExport() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
   caches.keys().then(keys => {
-    keys.filter(k => k !== 'hanmok-v11').forEach(k => caches.delete(k));
+    keys.filter(k => k !== 'hanmok-v12').forEach(k => caches.delete(k));
   });
 }

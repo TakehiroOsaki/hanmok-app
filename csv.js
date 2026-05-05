@@ -82,12 +82,12 @@ function parseTokuisakiCSV(text) {
 // 販売目標データ: 営業担当者コード,商品区分,商品コード,得意先コード,年,月,販売目標数
 function parseHanmokCSV(text) {
   return parseCSV(text).map(r => ({
-    eigyo_cd:         String(r[0]||'').trim(),
-    shohin_kbn:       String(r[1]||'').trim(),
-    shohin_cd:        String(r[2]||'').trim(),
-    tokuisaki_cd:     String(r[3]||'').trim(),
-    nen:              String(r[4]||'').trim(),
-    tsuki:            String(r[5]||'').trim().padStart(2,'0'),
+    eigyo_cd:          String(r[0]||'').trim(),
+    shohin_kbn:        String(r[1]||'').trim(),
+    shohin_cd:         String(r[2]||'').trim(),
+    tokuisaki_cd:      String(r[3]||'').trim(),
+    nen:               String(parseInt(r[4])||'').trim(),
+    tsuki:             String(parseInt(r[5]||0)).padStart(2,'0'),
     hanbai_mokuhyo_su: parseInt(r[6])||0
   })).filter(r => r.eigyo_cd && r.shohin_cd && r.tokuisaki_cd && r.nen && r.tsuki);
 }
@@ -95,12 +95,12 @@ function parseHanmokCSV(text) {
 // 販売実績データ: 営業担当者コード,商品区分,商品コード,得意先コード,年,月,販売実績数
 function parseHanjskCSV(text) {
   return parseCSV(text).map(r => ({
-    eigyo_cd:        String(r[0]||'').trim(),
-    shohin_kbn:      String(r[1]||'').trim(),
-    shohin_cd:       String(r[2]||'').trim(),
-    tokuisaki_cd:    String(r[3]||'').trim(),
-    nen:             String(r[4]||'').trim(),
-    tsuki:           String(r[5]||'').trim().padStart(2,'0'),
+    eigyo_cd:          String(r[0]||'').trim(),
+    shohin_kbn:        String(r[1]||'').trim(),
+    shohin_cd:         String(r[2]||'').trim(),
+    tokuisaki_cd:      String(r[3]||'').trim(),
+    nen:               String(parseInt(r[4])||'').trim(),
+    tsuki:             String(parseInt(r[5]||0)).padStart(2,'0'),
     hanbai_jisseki_su: parseInt(r[6])||0
   })).filter(r => r.eigyo_cd && r.shohin_cd && r.tokuisaki_cd && r.nen && r.tsuki);
 }
