@@ -47,7 +47,8 @@
   .menu-item:nth-child(3) .menu-icon{background:#1565c0;}
   .menu-item:nth-child(4) .menu-icon{background:#6a1b9a;}
   .menu-item:nth-child(5) .menu-icon{background:#00695c;}
-  .menu-item:nth-child(6) .menu-icon{background:var(--accent);}
+  .menu-item:nth-child(6) .menu-icon{background:#c17900;}
+  .menu-item:nth-child(7) .menu-icon{background:var(--accent);}
   .menu-item-text{flex:1;}
   .menu-item-label{font-size:16px;font-weight:700;}
   .menu-item-desc{font-size:12px;color:var(--text-sub);margin-top:2px;}
@@ -148,6 +149,25 @@
   .btn-menu-back{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0;}
   .btn-menu-back:active{opacity:0.8;transform:scale(0.97);}
 
+  /* 得意先情報一覧 */
+  .tokui-list{display:flex;flex-direction:column;gap:8px;padding:12px;}
+  .tokui-card{background:#fff;border-radius:10px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border);}
+  .tokui-card-header{background:var(--primary);color:#fff;padding:6px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;}
+  .tokui-card-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0;}
+  .tokui-col{padding:8px 12px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);min-width:0;}
+  .tokui-col:last-child{border-right:none;}
+  .tokui-cell{display:flex;flex-direction:column;gap:2px;}
+  .tokui-cell-item{font-size:12px;color:var(--text);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tokui-cell-item.label{font-size:10px;color:var(--text-sub);font-weight:600;}
+  .tokui-search{padding:10px 12px;background:#fff;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-shrink:0;}
+  .tokui-search input{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;-webkit-appearance:none;}
+  .tokui-search input:focus{outline:none;border-color:var(--primary-light);}
+  .tokui-count{font-size:12px;color:var(--text-sub);white-space:nowrap;}
+
+  /* 商品別集計小計行 */
+  .hanmok-table tr.tr-subtotal td{background:#dde8f5 !important;font-weight:800;padding:5px 8px;font-style:italic;}
+  .hanmok-table tr.tr-subtotal td.col-fix{background:#c5d8ee !important;}
+
   /* グループ区切り線 */
   .hanmok-table tr.tr-sa-last td{border-bottom:2px solid var(--primary);}
 
@@ -199,6 +219,11 @@
       <div class="menu-item disabled" id="menuTokuiShukei" onclick="showScreen('screenTokuiShukei')">
         <div class="menu-icon">🏪</div>
         <div class="menu-item-text"><div class="menu-item-label">得意先別集計</div><div class="menu-item-desc">得意先毎の目標・実績・差異集計</div></div>
+        <div class="menu-arrow">›</div>
+      </div>
+      <div class="menu-item disabled" id="menuTokuiInfo" onclick="showScreen('screenTokuiInfo')">
+        <div class="menu-icon">📇</div>
+        <div class="menu-item-text"><div class="menu-item-label">得意先情報一覧</div><div class="menu-item-desc">得意先の詳細情報を確認</div></div>
         <div class="menu-arrow">›</div>
       </div>
       <div class="menu-item disabled" id="menuExport" onclick="showScreen('screenExport')">
@@ -282,12 +307,25 @@
     <div class="ctrl-bar">
       <button class="btn-menu-back" onclick="showScreen('screenMenu')">◀ 戻る</button>
       <select class="form-input" id="tokuiShukeiNendoSel" onchange="renderTokuiShukeiTable()" style="max-width:120px;flex:none;"></select>
+      <select class="form-input" id="tokuiShukeiKbnSel" onchange="renderTokuiShukeiTable()" style="max-width:130px;flex:none;"></select>
       <div class="radio-group">
         <input type="radio" name="hyojiT" id="hyojiTSu" value="0" checked onchange="renderTokuiShukeiTable()"><label for="hyojiTSu">数量</label>
         <input type="radio" name="hyojiT" id="hyojiTGk" value="1" onchange="renderTokuiShukeiTable()"><label for="hyojiTGk">金額</label>
       </div>
     </div>
     <div class="table-container" id="tokuiShukeiTableContainer"><div style="padding:40px;text-align:center;color:var(--text-sub);font-size:14px;">年度を選択してください</div></div>
+  </div>
+
+  <!-- 得意先情報一覧 -->
+  <div class="screen" id="screenTokuiInfo">
+    <div class="header"><button class="header-back" onclick="showScreen('screenMenu')">‹</button><div class="header-title">得意先情報一覧</div></div>
+    <div class="tokui-search">
+      <input type="text" id="tokuiSearchInput" placeholder="得意先コード・名称で検索..." oninput="filterTokuiList()">
+      <span class="tokui-count" id="tokuiCount"></span>
+    </div>
+    <div style="flex:1;overflow-y:auto;" id="tokuiInfoContainer">
+      <div style="padding:40px;text-align:center;color:var(--text-sub);font-size:14px;">データをインポートしてください</div>
+    </div>
   </div>
 
   <!-- データエクスポート -->

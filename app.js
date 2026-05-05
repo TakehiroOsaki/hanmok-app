@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setCurrentEigyo(e) {
   currentEigyo = e;
   document.getElementById('menuUserLabel').innerHTML = `担当者：<span>${e.eigyo_name}（${e.eigyo_cd}）</span>`;
-  ['menuImport','menuHanmok','menuShukei','menuTokuiShukei','menuExport'].forEach(id => {
+  ['menuImport','menuHanmok','menuShukei','menuTokuiShukei','menuTokuiInfo','menuExport'].forEach(id => {
     document.getElementById(id).classList.remove('disabled');
   });
   document.getElementById('importFolderName').textContent = `/${e.eigyo_cd}/`;
@@ -35,6 +35,7 @@ function showScreen(id) {
   if (id === 'screenHanmok')      initHanmokScreen();
   if (id === 'screenShukei')      initShukeiScreen();
   if (id === 'screenTokuiShukei') initTokuiShukeiScreen();
+  if (id === 'screenTokuiInfo')   initTokuiInfoScreen();
   if (id === 'screenImport' || id === 'screenExport') updateDropboxStatus();
 }
 
@@ -563,54 +564,90 @@ async function renderShukeiTable() {
   targetNenTsuki.forEach(({ ts }) => { totalMok[ts]=0; totalJsk[ts]=0; });
   let gtMok=0, gtJsk=0;
 
-  for (const { shohin, moks, jsks } of shukeiData) {
-    let rowMok=0, rowJsk=0;
+  // 商品区分でグループ化して小計行を挿入
+  for (const kbn of ['1','2','3','4']) {
+    const kbnData = shukeiData.filter(d => d.shohin.shohin_kbn === kbn);
+    if (kbnData.length === 0) continue;
+
+    const kbnTotalMok = {}, kbnTotalJsk = {};
+    targetNenTsuki.forEach(({ ts }) => { kbnTotalMok[ts]=0; kbnTotalJsk[ts]=0; });
+    let kbnGtMok=0, kbnGtJsk=0;
+
+    for (const { shohin, moks, jsks } of kbnData) {
+      let rowMok=0, rowJsk=0;
+      ['目標','実績','差異'].forEach((label, idx) => {
+        const cls = ['tr-mok','tr-jsk','tr-sa'][idx];
+        const tr = document.createElement('tr');
+        tr.className = cls + (idx===2 ? ' tr-sa-last' : '');
+        if (idx === 0) {
+          const td = document.createElement('td');
+          td.className = 'col-fix'; td.rowSpan = 3;
+          td.textContent = shohin.shohin_name;
+          td.style.verticalAlign = 'middle'; td.style.fontSize = '12px';
+          tr.appendChild(td);
+        }
+        const tdType = document.createElement('td');
+        tdType.className = `col-rowtype ${['mok','jsk','sa'][idx]}`; tdType.textContent = label;
+        tr.appendChild(tdType);
+        let rowSum = 0;
+        targetNenTsuki.forEach(({ ts }) => {
+          const m = moks[ts], j = jsks[ts];
+          const mVal = isGk ? m.gk : m.su;
+          const jVal = isGk ? j.gk : j.su;
+          const val  = idx===0 ? mVal : idx===1 ? jVal : jVal-mVal;
+          const td = document.createElement('td');
+          td.className = 'cell-data ' + cls;
+          const sp = document.createElement('span');
+          sp.className = 'cell-inner' + (idx===2 && val<0 ? ' sa-minus':'');
+          sp.textContent = val.toLocaleString();
+          td.appendChild(sp); tr.appendChild(td);
+          rowSum += val;
+          if (idx===0) { rowMok+=mVal; kbnTotalMok[ts]+=mVal; totalMok[ts]+=mVal; }
+          if (idx===1) { rowJsk+=jVal; kbnTotalJsk[ts]+=jVal; totalJsk[ts]+=jVal; }
+        });
+        const tdT = document.createElement('td');
+        tdT.className = 'cell-total ' + cls;
+        if (idx===0) tdT.textContent = rowMok.toLocaleString();
+        else if (idx===1) tdT.textContent = rowJsk.toLocaleString();
+        else { const sa=rowJsk-rowMok; tdT.textContent=sa.toLocaleString(); if(sa<0)tdT.classList.add('sa-minus'); }
+        tr.appendChild(tdT);
+        tbody.appendChild(tr);
+      });
+      kbnGtMok += rowMok; kbnGtJsk += rowJsk;
+    }
+
+    // 商品区分小計行（3行）
     ['目標','実績','差異'].forEach((label, idx) => {
       const cls = ['tr-mok','tr-jsk','tr-sa'][idx];
       const tr = document.createElement('tr');
-      tr.className = cls + (idx===2 ? ' tr-sa-last' : '');
-
-      if (idx === 0) {
+      tr.className = 'tr-subtotal ' + cls + (idx===2 ? ' tr-sa-last':'');
+      if (idx===0) {
         const td = document.createElement('td');
-        td.className = 'col-fix'; td.rowSpan = 3;
-        td.textContent = `[${SHOHIN_KBN_LABEL[shohin.shohin_kbn]||shohin.shohin_kbn}] ${shohin.shohin_name}`;
-        td.style.verticalAlign = 'middle'; td.style.fontSize = '12px';
+        td.className = 'col-fix'; td.rowSpan=3;
+        td.textContent = `【${SHOHIN_KBN_LABEL[kbn]}小計】`;
+        td.style.verticalAlign='middle'; td.style.fontWeight='800'; td.style.fontSize='12px';
         tr.appendChild(td);
       }
       const tdType = document.createElement('td');
       tdType.className = `col-rowtype ${['mok','jsk','sa'][idx]}`; tdType.textContent = label;
       tr.appendChild(tdType);
-
-      let rowSum = 0;
       targetNenTsuki.forEach(({ ts }) => {
-        const m = moks[ts], j = jsks[ts];
-        const mVal = isGk ? m.gk : m.su;
-        const jVal = isGk ? j.gk : j.su;
+        const mVal = kbnTotalMok[ts], jVal = kbnTotalJsk[ts];
         const val  = idx===0 ? mVal : idx===1 ? jVal : jVal-mVal;
         const td = document.createElement('td');
-        td.className = 'cell-data ' + cls;
-        const sp = document.createElement('span');
-        sp.className = 'cell-inner' + (idx===2 && val<0 ? ' sa-minus':'');
-        sp.textContent = val.toLocaleString();
-        td.appendChild(sp); tr.appendChild(td);
-        rowSum += val;
-        if (idx===0) { rowMok+=mVal; totalMok[ts]+=mVal; }
-        if (idx===1) { rowJsk+=jVal; totalJsk[ts]+=jVal; }
+        td.className = 'cell-total';
+        td.textContent = val.toLocaleString();
+        if (idx===2 && val<0) td.classList.add('sa-minus');
+        tr.appendChild(td);
       });
-
-      const tdT = document.createElement('td');
-      tdT.className = 'cell-total ' + cls;
-      if (idx===0) tdT.textContent = rowMok.toLocaleString();
-      else if (idx===1) tdT.textContent = rowJsk.toLocaleString();
-      else {
-        const sa = rowJsk-rowMok;
-        tdT.textContent = sa.toLocaleString();
-        if (sa<0) tdT.classList.add('sa-minus');
-      }
-      tr.appendChild(tdT);
+      const gv = idx===0?kbnGtMok:idx===1?kbnGtJsk:kbnGtJsk-kbnGtMok;
+      const tdG = document.createElement('td');
+      tdG.className='cell-total'; tdG.textContent=gv.toLocaleString();
+      if (idx===2&&gv<0) tdG.classList.add('sa-minus');
+      tr.appendChild(tdG);
       tbody.appendChild(tr);
     });
-    gtMok += rowMok; gtJsk += rowJsk;
+    gtMok += kbnGtMok; gtJsk += kbnGtJsk;
   }
 
   // 総合計行
@@ -664,33 +701,42 @@ async function initTokuiShukeiScreen() {
     if (n === curNendo) opt.selected = true;
     nendoSel.appendChild(opt);
   });
+  // 商品区分コンボ
+  const kbnSel = document.getElementById('tokuiShukeiKbnSel');
+  kbnSel.innerHTML = '<option value="">すべて</option>';
+  Object.entries(SHOHIN_KBN_LABEL).forEach(([k,v]) => {
+    const opt = document.createElement('option');
+    opt.value = k; opt.textContent = v;
+    kbnSel.appendChild(opt);
+  });
   renderTokuiShukeiTable();
 }
 
 async function renderTokuiShukeiTable() {
   const nendo = parseInt(document.getElementById('tokuiShukeiNendoSel').value);
   if (!nendo) return;
-  const isGk = document.querySelector('input[name="hyojiT"]:checked').value === '1';
+  const isGk  = document.querySelector('input[name="hyojiT"]:checked').value === '1';
+  const selKbn = document.getElementById('tokuiShukeiKbnSel').value; // ''=すべて
 
   const targetNenTsuki = TSUKI_LIST.map(ts => ({
     ts, nen: String(parseInt(ts) >= 3 ? nendo : nendo+1)
   }));
 
-  // マスタ・データ取得
   const tokuisakiList = (await dbGetAll(STORES.TOKUISAKI))
     .sort((a,b) => a.tokuisaki_cd.localeCompare(b.tokuisaki_cd));
   const shohinList = await dbGetAll(STORES.SHOHIN);
-
-  // 単価マップ（商品コード→単価）
   const tankaMap = {};
   shohinList.forEach(s => { tankaMap[`${s.shohin_kbn}_${s.shohin_cd}`] = s.hanbai_tanka || 0; });
 
+  // 商品区分フィルタ適用
   const allHanmok = (await dbGetAll(STORES.HANMOK)).filter(h =>
     h.eigyo_cd === currentEigyo.eigyo_cd &&
+    (selKbn === '' || h.shohin_kbn === selKbn) &&
     targetNenTsuki.some(nt => nt.nen === h.nen && nt.ts === h.tsuki)
   );
   const allHanjsk = (await dbGetAll(STORES.HANJSK)).filter(h =>
     h.eigyo_cd === currentEigyo.eigyo_cd &&
+    (selKbn === '' || h.shohin_kbn === selKbn) &&
     targetNenTsuki.some(nt => nt.nen === h.nen && nt.ts === h.tsuki)
   );
 
@@ -827,6 +873,124 @@ async function renderTokuiShukeiTable() {
 }
 
 // =============================================
+// 得意先情報一覧
+// =============================================
+let _tokuiAllData = [];
+
+async function initTokuiInfoScreen() {
+  _tokuiAllData = (await dbGetAll(STORES.TOKUISAKI))
+    .sort((a,b) => a.tokuisaki_cd.localeCompare(b.tokuisaki_cd));
+  document.getElementById('tokuiSearchInput').value = '';
+  renderTokuiList(_tokuiAllData);
+}
+
+function filterTokuiList() {
+  const q = document.getElementById('tokuiSearchInput').value.trim().toLowerCase();
+  const filtered = q ? _tokuiAllData.filter(t =>
+    t.tokuisaki_cd.includes(q) ||
+    t.tokuisaki_name.toLowerCase().includes(q) ||
+    (t.seishiki1||'').toLowerCase().includes(q)
+  ) : _tokuiAllData;
+  renderTokuiList(filtered);
+}
+
+function renderTokuiList(list) {
+  document.getElementById('tokuiCount').textContent = `${list.length}件`;
+  const container = document.getElementById('tokuiInfoContainer');
+  if (list.length === 0) {
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-sub);font-size:14px;">該当する得意先がありません</div>';
+    return;
+  }
+  const wrap = document.createElement('div');
+  wrap.className = 'tokui-list';
+
+  for (const t of list) {
+    const card = document.createElement('div');
+    card.className = 'tokui-card';
+
+    // カードヘッダー（得意先コード＋名称）
+    const hdr = document.createElement('div');
+    hdr.className = 'tokui-card-header';
+    hdr.innerHTML = `<span>${t.tokuisaki_cd}</span><span>${t.tokuisaki_name}</span>`;
+    card.appendChild(hdr);
+
+    // カードボディ（8カラム）
+    const body = document.createElement('div');
+    body.className = 'tokui-card-body';
+
+    const cols = [
+      // カラム1：得意先コード（上段）、得意先名（中段）
+      [
+        { label:'得意先コード', val: t.tokuisaki_cd },
+        { label:'得意先名',     val: t.tokuisaki_name }
+      ],
+      // カラム2：正式名称1（上段）、正式名称2（中段）
+      [
+        { label:'正式名称1', val: t.seishiki1 },
+        { label:'正式名称2', val: t.seishiki2 }
+      ],
+      // カラム3：郵便番号（上段）
+      [
+        { label:'郵便番号', val: t.yubin ? '〒'+t.yubin : '' }
+      ],
+      // カラム4：住所1〜3
+      [
+        { label:'住所1', val: t.jusho1 },
+        { label:'住所2', val: t.jusho2 },
+        { label:'住所3', val: t.jusho3 }
+      ],
+      // カラム5：TEL1・TEL2・FAX
+      [
+        { label:'TEL1', val: t.tel1 },
+        { label:'TEL2', val: t.tel2 },
+        { label:'FAX',  val: t.fax  }
+      ],
+      // カラム6：代表者名・創業
+      [
+        { label:'代表者名', val: t.daihyosha },
+        { label:'創業',     val: t.sogyou    }
+      ],
+      // カラム7：資本金・従業員数・年間売上
+      [
+        { label:'資本金',   val: t.shihonkin },
+        { label:'従業員数', val: t.jugyoin   },
+        { label:'年間売上', val: t.nenkanju  }
+      ],
+      // カラム8：施行件数・葬儀場数・ジャンル
+      [
+        { label:'施行件数', val: t.sekouken },
+        { label:'葬儀場数', val: t.sogijosu },
+        { label:'ジャンル', val: t.genre    }
+      ]
+    ];
+
+    cols.forEach(items => {
+      const col = document.createElement('div');
+      col.className = 'tokui-col';
+      const cell = document.createElement('div');
+      cell.className = 'tokui-cell';
+      items.forEach(item => {
+        const lbl = document.createElement('span');
+        lbl.className = 'tokui-cell-item label';
+        lbl.textContent = item.label;
+        const val = document.createElement('span');
+        val.className = 'tokui-cell-item';
+        val.textContent = item.val || '—';
+        cell.appendChild(lbl);
+        cell.appendChild(val);
+      });
+      col.appendChild(cell);
+      body.appendChild(col);
+    });
+
+    card.appendChild(body);
+    wrap.appendChild(card);
+  }
+  container.innerHTML = '';
+  container.appendChild(wrap);
+}
+
+// =============================================
 // データエクスポート
 // =============================================
 async function execExport() {
@@ -866,6 +1030,6 @@ async function doExport() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
   caches.keys().then(keys => {
-    keys.filter(k => k !== 'hanmok-v9').forEach(k => caches.delete(k));
+    keys.filter(k => k !== 'hanmok-v10').forEach(k => caches.delete(k));
   });
 }
