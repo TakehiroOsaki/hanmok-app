@@ -88,3 +88,19 @@ async function getConfig(key) {
   const r = await dbGet(STORES.CONFIG, key);
   return r ? r.value : null;
 }
+
+// IndexedDB全体を削除して再作成する
+// レイアウト変更時にストア定義ごとリセットできる
+function resetDB() {
+  return new Promise((resolve, reject) => {
+    // 既存接続を閉じる
+    if (db) { db.close(); db = null; }
+    const req = indexedDB.deleteDatabase(DB_NAME);
+    req.onsuccess = () => {
+      // 削除後にopenDBで再作成
+      openDB().then(resolve).catch(reject);
+    };
+    req.onerror   = e => reject(e.target.error);
+    req.onblocked = () => reject(new Error('DBが他の場所で開かれています。アプリを再起動してください。'));
+  });
+}

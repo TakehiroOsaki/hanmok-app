@@ -141,23 +141,43 @@ async function execImport() {
   ]);
 }
 async function doImport() {
-  showLoading('インポート中...');
+  showLoading('データベースをリセット中...');
   const folder = '/' + currentEigyo.eigyo_cd;
-  const files = [
-    { name:'shohin.csv',  label:'商品マスタ',     store:STORES.SHOHIN,    parser:parseShohinCSV  },
-    { name:'tokuis.csv',  label:'得意先マスタ',   store:STORES.TOKUISAKI, parser:parseTokuisakiCSV },
-    { name:'hanmok.csv',  label:'販売目標データ', store:STORES.HANMOK,    parser:parseHanmokCSV  },
-    { name:'hanjsk.csv',  label:'販売実績データ', store:STORES.HANJSK,    parser:parseHanjskCSV  }
-  ];
+
   const resultArea = document.getElementById('importResultArea');
   const resultList = document.getElementById('importResultList');
   resultList.innerHTML = ''; resultArea.style.display = 'block';
+
+  try {
+    // 営業担当者情報を退避（DB削除前に保持）
+    const savedEigyo = { ...currentEigyo };
+
+    // IndexedDB全体を削除して再作成
+    await resetDB();
+
+    // 営業担当者情報を復元
+    await dbPut(STORES.EIGYO, savedEigyo);
+    await setConfig('eigyo_cd', savedEigyo.eigyo_cd);
+    addResult(resultList, 'データベース', 'リセット完了', 'ok');
+  } catch(e) {
+    addResult(resultList, 'データベース', `リセット失敗: ${e.message}`, 'err');
+    hideLoading();
+    return;
+  }
+
+  const files = [
+    { name:'shohin.csv',  label:'商品マスタ',     store:STORES.SHOHIN,    parser:parseShohinCSV    },
+    { name:'tokuis.csv',  label:'得意先マスタ',   store:STORES.TOKUISAKI, parser:parseTokuisakiCSV },
+    { name:'hanmok.csv',  label:'販売目標データ', store:STORES.HANMOK,    parser:parseHanmokCSV    },
+    { name:'hanjsk.csv',  label:'販売実績データ', store:STORES.HANJSK,    parser:parseHanjskCSV    }
+  ];
+
   for (const f of files) {
+    showLoading(`${f.label}を取込中...`);
     try {
       const buf  = await dropboxDownload(`${folder}/${f.name}`);
       const text = decodeShiftJIS(buf);
       const recs = f.parser(text);
-      await dbClear(f.store);
       await dbBulkPut(f.store, recs);
       addResult(resultList, f.label, `${recs.length}件`, 'ok');
     } catch(e) {
@@ -1029,6 +1049,6 @@ async function doExport() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
   caches.keys().then(keys => {
-    keys.filter(k => k !== 'hanmok-v15').forEach(k => caches.delete(k));
+    keys.filter(k => k !== 'hanmok-v16').forEach(k => caches.delete(k));
   });
 }
