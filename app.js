@@ -1049,6 +1049,6 @@ async function doExport() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
   caches.keys().then(keys => {
-    keys.filter(k => k !== 'hanmok-v16').forEach(k => caches.delete(k));
+    keys.filter(k => k !== 'hanmok-v17').forEach(k => caches.delete(k));
   });
 }
