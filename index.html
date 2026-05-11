@@ -238,7 +238,7 @@
   <div class="screen active" id="screenMenu">
     <div class="menu-top">
       <div class="menu-top-title">営業販売目標管理</div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:4px;">v1.22</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:4px;">v1.23</div>
       <div class="menu-top-user" id="menuUserLabel">担当者未登録</div>
     </div>
     <div class="menu-list">
@@ -301,24 +301,20 @@
         <div class="dropbox-status disconnected" id="dropboxStatusImport"><span>⚠</span><span id="dropboxStatusTextImport">Dropbox未接続</span></div>
         <div class="card-title">取込ファイル</div>
         <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">Dropbox内の <strong id="importFolderName">/担当者コード/</strong> フォルダより取り込みます。<br>※既存データはすべて削除されます。</p>
-        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
           <li style="padding:9px 12px;background:var(--bg);border-radius:7px;font-size:13px;">📄 shohin.csv　— 商品マスタ</li>
           <li style="padding:9px 12px;background:var(--bg);border-radius:7px;font-size:13px;">📄 tokuis.csv　— 得意先マスタ</li>
           <li style="padding:9px 12px;background:var(--bg);border-radius:7px;font-size:13px;">📄 hanmok.csv　— 販売目標データ</li>
           <li style="padding:9px 12px;background:var(--bg);border-radius:7px;font-size:13px;">📄 hanjsk.csv　— 販売実績データ</li>
         </ul>
         <div id="importResultArea" style="display:none;"><div class="card-title">取込結果</div><ul class="import-result" id="importResultList"></ul></div>
+        <div class="btn-row"><button class="btn btn-secondary" onclick="showScreen('screenMenu')">戻る</button><button class="btn btn-accent" onclick="execImport()">実行</button></div>
       </div>
       <div class="card" id="dropboxAuthCard">
         <div class="card-title">Dropbox認証</div>
         <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">初回はDropboxとの連携が必要です。</p>
         <button class="btn btn-primary" onclick="dropboxAuth()">Dropboxと連携する</button>
       </div>
-    </div>
-    <!-- ボタンを画面下部に固定 -->
-    <div style="flex-shrink:0;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--border);display:flex;gap:10px;">
-      <button class="btn btn-secondary" onclick="showScreen('screenMenu')">戻る</button>
-      <button class="btn btn-accent" onclick="execImport()">実行</button>
     </div>
   </div>
 
@@ -387,23 +383,19 @@
         <div class="dropbox-status disconnected" id="dropboxStatusExport"><span>⚠</span><span id="dropboxStatusTextExport">Dropbox未接続</span></div>
         <div class="card-title">出力ファイル</div>
         <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">Dropbox内の <strong id="exportFolderName">/担当者コード/</strong> フォルダへ出力します。<br>※既存ファイルは上書きされます。</p>
-        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
           <li style="padding:9px 12px;background:var(--bg);border-radius:7px;font-size:13px;">📄 shohin.csv　— 商品マスタ</li>
           <li style="padding:9px 12px;background:var(--bg);border-radius:7px;font-size:13px;">📄 tokuis.csv　— 得意先マスタ</li>
           <li style="padding:9px 12px;background:var(--bg);border-radius:7px;font-size:13px;">📄 hanmok.csv　— 販売目標データ</li>
         </ul>
         <div id="exportResultArea" style="display:none;"><div class="card-title">出力結果</div><ul class="import-result" id="exportResultList"></ul></div>
+        <div class="btn-row"><button class="btn btn-secondary" onclick="showScreen('screenMenu')">戻る</button><button class="btn btn-accent" onclick="execExport()">OK</button></div>
       </div>
       <div class="card" id="dropboxAuthCardExport">
         <div class="card-title">Dropbox認証</div>
         <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">初回はDropboxとの連携が必要です。</p>
         <button class="btn btn-primary" onclick="dropboxAuth()">Dropboxと連携する</button>
       </div>
-    </div>
-    <!-- ボタンを画面下部に固定 -->
-    <div style="flex-shrink:0;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--border);display:flex;gap:10px;">
-      <button class="btn btn-secondary" onclick="showScreen('screenMenu')">戻る</button>
-      <button class="btn btn-accent" onclick="execExport()">OK</button>
     </div>
   </div>
 
