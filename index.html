@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="販売目標管理">
@@ -168,9 +168,38 @@
   .hanmok-table tr.tr-subtotal td{background:#dde8f5 !important;font-weight:800;padding:5px 8px;font-style:italic;}
   .hanmok-table tr.tr-subtotal td.col-fix{background:#c5d8ee !important;}
 
-  /* iPadホームバー対応 */
-  .screen-body { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
-  .menu-list { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+  /* iPadホームバー対応（縦・横両方） */
+  .screen-body {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    padding-left: calc(16px + env(safe-area-inset-left));
+    padding-right: calc(16px + env(safe-area-inset-right));
+  }
+  .menu-list {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    padding-left: calc(16px + env(safe-area-inset-left));
+    padding-right: calc(16px + env(safe-area-inset-right));
+  }
+  .menu-top {
+    padding-left: calc(20px + env(safe-area-inset-left));
+    padding-right: calc(20px + env(safe-area-inset-right));
+  }
+  .header {
+    padding-left: calc(16px + env(safe-area-inset-left));
+    padding-right: calc(16px + env(safe-area-inset-right));
+  }
+  .ctrl-bar {
+    padding-left: calc(14px + env(safe-area-inset-left));
+    padding-right: calc(14px + env(safe-area-inset-right));
+  }
+  .tokui-search {
+    padding-left: calc(12px + env(safe-area-inset-left));
+    padding-right: calc(12px + env(safe-area-inset-right));
+  }
+  .tokui-list {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    padding-left: calc(12px + env(safe-area-inset-left));
+    padding-right: calc(12px + env(safe-area-inset-right));
+  }
 
   /* グループ区切り線 */
   .hanmok-table tr.tr-sa-last td{border-bottom:2px solid var(--primary);}
@@ -197,6 +226,7 @@
   <div class="screen active" id="screenMenu">
     <div class="menu-top">
       <div class="menu-top-title">営業販売目標管理</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:4px;">v1.17</div>
       <div class="menu-top-user" id="menuUserLabel">担当者未登録</div>
     </div>
     <div class="menu-list">
